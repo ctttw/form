@@ -1,0 +1,713 @@
+<html><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>學生成績輸入表單 - 增強版</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&family=Noto+Sans+TC:wght@300;400;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.9.1/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chart.js/3.7.1/chart.min.js"></script>
+<style>
+body {
+  font-family: 'Poppins', 'Noto Sans TC', sans-serif;
+  background: linear-gradient(135deg, #f6f9fc, #e9f2f9);
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  color: #2d3748;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.container {
+  width: 100%;
+  max-width: 650px;
+  padding: 20px;
+}
+
+.form-wrapper {
+  background-color: #ffffff;
+  padding: 3rem;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  transition: all 0.6s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+  opacity: 0;
+  transform: translateY(50px);
+}
+
+.form-wrapper:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+}
+
+h1 {
+  text-align: center;
+  color: #4a5568;
+  margin-bottom: 2.5rem;
+  font-weight: 600;
+  font-size: 2.5rem;
+}
+
+.form-group {
+  margin-bottom: 2rem;
+  position: relative;
+}
+
+label {
+  display: block;
+  margin-bottom: 0.75rem;
+  color: #4a5568;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  font-size: 1rem;
+}
+
+select, input[type="number"] {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  box-sizing: border-box;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  background-color: #f8fafc;
+  color: #2d3748;
+}
+
+select {
+  appearance: none;
+  background-image: url('data:image/svg+xml;utf8,<svg fill="%234a5568" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>');
+  background-repeat: no-repeat;
+  background-position: right 10px top 50%;
+  background-size: 20px auto;
+}
+
+select:focus, input[type="number"]:focus {
+  border-color: #4299e1;
+  box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.25);
+  outline: none;
+  background-color: #fff;
+}
+
+button {
+  background: linear-gradient(135deg, #4299e1, #3182ce);
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+button:hover {
+  background: linear-gradient(135deg, #3182ce, #2b6cb0);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(66, 153, 225, 0.4);
+}
+
+button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 5px rgba(66, 153, 225, 0.4);
+}
+
+.error-message {
+  color: #e53e3e;
+  font-size: 0.85rem;
+  margin-top: 0.5rem;
+  transition: all 0.3s ease;
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.loading {
+  display: none;
+  text-align: center;
+  margin-top: 1.5rem;
+}
+
+.loading::after {
+  content: '';
+  display: inline-block;
+  width: 30px;
+  height: 30px;
+  border: 3px solid #4299e1;
+  border-radius: 50%;
+  border-top-color: transparent;
+  animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.question {
+  display: none;
+}
+
+.question.active {
+  display: block;
+}
+
+.buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 2rem;
+}
+
+#prevBtn {
+  background: linear-gradient(135deg, #ed8936, #dd6b20);
+}
+
+#prevBtn:hover {
+  background: linear-gradient(135deg, #dd6b20, #c05621);
+}
+
+#progress {
+  text-align: center;
+  margin-top: 1.5rem;
+  font-size: 0.9rem;
+  color: #718096;
+  font-weight: 600;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 6px;
+  background-color: #e2e8f0;
+  border-radius: 3px;
+  overflow: hidden;
+  margin-top: 0.75rem;
+}
+
+.progress-bar-inner {
+  height: 100%;
+  background: linear-gradient(90deg, #4299e1, #3182ce);
+  transition: width 0.3s ease;
+}
+
+#gradeChart {
+  margin-top: 2rem;
+}
+
+.info-box {
+  background-color: #ebf8ff;
+  border-left: 4px solid #4299e1;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border-radius: 5px;
+}
+
+.info-box h3 {
+  margin-top: 0;
+  color: #2b6cb0;
+}
+
+.info-box p {
+  margin-bottom: 0;
+  color: #4a5568;
+}
+
+#saveBtn {
+  background: linear-gradient(135deg, #48bb78, #38a169);
+  margin-right: 1rem;
+}
+
+#saveBtn:hover {
+  background: linear-gradient(135deg, #38a169, #2f855a);
+}
+
+#loadBtn {
+  background: linear-gradient(135deg, #ecc94b, #d69e2e);
+}
+
+#loadBtn:hover {
+  background: linear-gradient(135deg, #d69e2e, #b7791f);
+}
+
+.hidden {
+  display: none;
+}
+
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="form-wrapper" id="formContainer">
+    <form id="gradeForm">
+      <h1>學生成績輸入</h1>
+      
+      <div id="infoBox" class="info-box hidden">
+        <h3>提示</h3>
+        <p id="infoText"></p>
+      </div>
+      
+      <div class="question active" id="q1">
+        <div class="form-group">
+          <label for="chinese">國文成績</label>
+          <select id="chinese" name="chinese" required>
+            <option value="" disabled selected>請選擇</option>
+            <option value="A++">A++</option>
+            <option value="A+">A+</option>
+            <option value="A">A</option>
+            <option value="B++">B++</option>
+            <option value="B+">B+</option>
+            <option value="B">B</option>
+            <option value="C">C</option>
+          </select>
+          <div class="error-message" id="chineseError"></div>
+        </div>
+      </div>
+      
+      <div class="question" id="q2">
+        <div class="form-group">
+          <label for="math">數學成績</label>
+          <select id="math" name="math" required>
+            <option value="" disabled selected>請選擇</option>
+            <option value="A++">A++</option>
+            <option value="A+">A+</option>
+            <option value="A">A</option>
+            <option value="B++">B++</option>
+            <option value="B+">B+</option>
+            <option value="B">B</option>
+            <option value="C">C</option>
+          </select>
+          <div class="error-message" id="mathError"></div>
+        </div>
+      </div>
+      
+      <div class="question" id="q3">
+        <div class="form-group">
+          <label for="english">英文成績</label>
+          <select id="english" name="english" required>
+            <option value="" disabled selected>請選擇</option>
+            <option value="A++">A++</option>
+            <option value="A+">A+</option>
+            <option value="A">A</option>
+            <option value="B++">B++</option>
+            <option value="B+">B+</option>
+            <option value="B">B</option>
+            <option value="C">C</option>
+          </select>
+          <div class="error-message" id="englishError"></div>
+        </div>
+      </div>
+      
+      <div class="question" id="q4">
+        <div class="form-group">
+          <label for="social">社會成績</label>
+          <select id="social" name="social" required>
+            <option value="" disabled selected>請選擇</option>
+            <option value="A++">A++</option>
+            <option value="A+">A+</option>
+            <option value="A">A</option>
+            <option value="B++">B++</option>
+            <option value="B+">B+</option>
+            <option value="B">B</option>
+            <option value="C">C</option>
+          </select>
+          <div class="error-message" id="socialError"></div>
+        </div>
+      </div>
+      
+      <div class="question" id="q5">
+        <div class="form-group">
+          <label for="science">自然成績</label>
+          <select id="science" name="science" required>
+            <option value="" disabled selected>請選擇</option>
+            <option value="A++">A++</option>
+            <option value="A+">A+</option>
+            <option value="A">A</option>
+            <option value="B++">B++</option>
+            <option value="B+">B+</option>
+            <option value="B">B</option>
+            <option value="C">C</option>
+          </select>
+          <div class="error-message" id="scienceError"></div>
+        </div>
+      </div>
+      
+      <div class="question" id="q6">
+        <div class="form-group">
+          <label for="essay">作文成績</label>
+          <select id="essay" name="essay" required>
+            <option value="" disabled selected>請選擇</option>
+            <option value="1">1級分</option>
+            <option value="2">2級分</option>
+            <option value="3">3級分</option>
+            <option value="4">4級分</option>
+            <option value="5">5級分</option>
+            <option value="6">6級分</option>
+          </select>
+          <div class="error-message" id="essayError"></div>
+        </div>
+      </div>
+      
+      <div class="question" id="q7">
+        <div class="form-group">
+          <label for="minPercentile">全區序位最小比率(%)</label>
+          <input type="number" id="minPercentile" name="minPercentile" min="0" max="100" step="0.01" required>
+          <div class="error-message" id="minPercentileError"></div>
+        </div>
+      </div>
+      
+      <div class="question" id="q8">
+        <div class="form-group">
+          <label for="maxPercentile">全區序位最大比率(%)</label>
+          <input type="number" id="maxPercentile" name="maxPercentile" min="0" max="100" step="0.01" required>
+          <div class="error-message" id="maxPercentileError"></div>
+        </div>
+      </div>
+      
+      <div class="question" id="q9">
+        <div class="form-group">
+          <label for="minInterval">全區序位最小區間</label>
+          <input type="number" id="minInterval" name="minInterval" min="0" required>
+          <div class="error-message" id="minIntervalError"></div>
+        </div>
+      </div>
+      
+      <div class="question" id="q10">
+        <div class="form-group">
+          <label for="maxInterval">全區序位最大區間</label>
+          <input type="number" id="maxInterval" name="maxInterval" min="0" required>
+          <div class="error-message" id="maxIntervalError"></div>
+        </div>
+      </div>
+      
+      <div class="buttons">
+        <button type="button" id="prevBtn" style="display: none;">上一題</button>
+        <button type="button" id="nextBtn">下一題</button>
+      </div>
+      
+      <div id="progress">問題 1 / 10</div>
+      <div class="progress-bar">
+        <div class="progress-bar-inner" style="width: 10%;"></div>
+      </div>
+    </form>
+
+    <div class="loading" id="loading"></div>
+    
+    <canvas id="gradeChart" style="display: none;"></canvas>
+    
+    <div class="buttons" style="margin-top: 2rem;">
+      <button type="button" id="saveBtn">儲存進度</button>
+      <button type="button" id="loadBtn">載入進度</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx8CMd79rypHz0lDrTrQ42bba0S4R3uSqfTH6HuT2vNjUnOzd0fZMLSPOV1cwOBoUDBAg/exec';
+
+let currentQuestion = 1;
+const totalQuestions = 10;
+
+let gradeChart = null;
+
+document.addEventListener('DOMContentLoaded', function() {
+  gsap.to('#formContainer', {duration: 1, opacity: 1, y: 0, ease: 'power3.out'});
+  updateButtons();
+  setupEventListeners();
+});
+
+function setupEventListeners() {
+  const nextBtn = document.getElementById('nextBtn');
+  const prevBtn = document.getElementById('prevBtn');
+  const saveBtn = document.getElementById('saveBtn');
+  const loadBtn = document.getElementById('loadBtn');
+
+  nextBtn.addEventListener('click', handleNextClick);
+  prevBtn.addEventListener('click', handlePrevClick);
+  saveBtn.addEventListener('click', saveProgress);
+  loadBtn.addEventListener('click', loadProgress);
+  
+  document.querySelectorAll('select, input').forEach(input => {
+    input.addEventListener('change', updateChart);
+  });
+}
+
+function handleNextClick() {
+  if (validateCurrentQuestion()) {
+    if (currentQuestion < totalQuestions) {
+      showQuestion(currentQuestion + 1);
+    } else {
+      submitForm();
+    }
+  }
+}
+
+function handlePrevClick() {
+  if (currentQuestion > 1) {
+    showQuestion(currentQuestion - 1);
+  }
+}
+
+function showQuestion(questionNumber) {
+  const questions = document.querySelectorAll('.question');
+  questions.forEach(q => q.classList.remove('active'));
+  document.getElementById(`q${questionNumber}`).classList.add('active');
+  currentQuestion = questionNumber;
+  updateButtons();
+  updateProgress();
+  
+  gsap.fromTo(`#q${questionNumber}`, 
+    {opacity: 0, x: 50}, 
+    {duration: 0.5, opacity: 1, x: 0, ease: 'power2.out'}
+  );
+  
+  showInfoBox(questionNumber);
+}
+
+function updateButtons() {
+  const prevBtn = document.getElementById('prevBtn');
+  const nextBtn = document.getElementById('nextBtn');
+  prevBtn.style.display = currentQuestion > 1 ? 'block' : 'none';
+  nextBtn.textContent = currentQuestion < totalQuestions ? '下一題' : '提交';
+}
+
+function updateProgress() {
+  document.getElementById('progress').textContent = `問題 ${currentQuestion} / ${totalQuestions}`;
+  const progressBar = document.querySelector('.progress-bar-inner');
+  progressBar.style.width = `${(currentQuestion / totalQuestions) * 100}%`;
+}
+
+function validateCurrentQuestion() {
+  const currentQuestionElement = document.querySelector('.question.active');
+  const input = currentQuestionElement.querySelector('select, input');
+  const errorElement = currentQuestionElement.querySelector('.error-message');
+  
+  if (input.value === '' || (input.type === 'number' && (isNaN(parseFloat(input.value)) || parseFloat(input.value) < 0))) {
+    showError(input, errorElement, '請填寫有效答案');
+    return false;
+  }
+  
+  clearError(input, errorElement);
+  return true;
+}
+
+function showError(input, errorElement, message) {
+  input.classList.add('error');
+  errorElement.textContent = message;
+  gsap.to(errorElement, {duration: 0.3, opacity: 1, y: 0, ease: 'power2.out'});
+}
+
+function clearError(input, errorElement) {
+  input.classList.remove('error');
+  gsap.to(errorElement, {duration: 0.3, opacity: 0, y: 10, ease: 'power2.in'});
+}
+
+function submitForm() {
+  if (validateForm()) {
+    const form = document.getElementById('gradeForm');
+    const formData = new FormData(form);
+    const loading = document.getElementById('loading');
+    
+    gsap.to(loading, {duration: 0.3, display: 'block', opacity: 1, ease: 'power2.out'});
+    document.getElementById('nextBtn').disabled = true;
+    document.getElementById('prevBtn').disabled = true;
+    
+    fetch(SCRIPT_URL, {
+      method: 'POST',
+      body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+      gsap.to(loading, {duration: 0.3, opacity: 0, display: 'none', ease: 'power2.in'});
+      document.getElementById('nextBtn').disabled = false;
+      document.getElementById('prevBtn').disabled = false;
+      if (data.result === 'success') {
+        gsap.to('#formContainer', {
+          duration: 0.5,
+          opacity: 0,
+          y: -50,
+          ease: 'power2.in',
+          onComplete: () => {
+            window.location.href = 'https://tyctw.github.io/redirects.html';
+          }
+        });
+      } else {
+        alert('提交失敗：' + data.error);
+      }
+    })
+    .catch(error => {
+      gsap.to(loading, {duration: 0.3, opacity: 0, display: 'none', ease: 'power2.in'});
+      document.getElementById('nextBtn').disabled = false;
+      document.getElementById('prevBtn').disabled = false;
+      alert('發生錯誤：' + error.message);
+    });
+  }
+}
+
+function validateForm() {
+  let isValid = true;
+  const fields = ['chinese', 'math', 'english', 'social', 'science', 'essay', 'minPercentile', 'maxPercentile', 'minInterval', 'maxInterval'];
+  
+  fields.forEach(field => {
+    const input = document.getElementById(field);
+    const errorElement = document.getElementById(`${field}Error`);
+    
+    if (input.value === '' || (input.type === 'number' && (isNaN(parseFloat(input.value)) || parseFloat(input.value) < 0))) {
+      showError(input, errorElement, '請填寫有效答案');
+      isValid = false;
+    } else {
+      clearError(input, errorElement);
+    }
+  });
+  
+  const minPercentile = parseFloat(document.getElementById('minPercentile').value);
+  const maxPercentile = parseFloat(document.getElementById('maxPercentile').value);
+  const minInterval = parseFloat(document.getElementById('minInterval').value);
+  const maxInterval = parseFloat(document.getElementById('maxInterval').value);
+  
+  if (minPercentile > maxPercentile) {
+    showError(document.getElementById('minPercentile'), document.getElementById('minPercentileError'), '最小比率不能大於最大比率');
+    showError(document.getElementById('maxPercentile'), document.getElementById('maxPercentileError'), '最大比率不能小於最小比率');
+    isValid = false;
+  }
+  
+  if (minInterval > maxInterval) {
+    showError(document.getElementById('minInterval'), document.getElementById('minIntervalError'), '最小區間不能大於最大區間');
+    showError(document.getElementById('maxInterval'), document.getElementById('maxIntervalError'), '最大區間不能小於最小區間');
+    isValid = false;
+  }
+  
+  return isValid;
+}
+
+function updateChart() {
+  const ctx = document.getElementById('gradeChart').getContext('2d');
+  const grades = ['chinese', 'math', 'english', 'social', 'science'];
+  const gradeValues = grades.map(grade => {
+    const select = document.getElementById(grade);
+    return select.value ? gradeToNumber(select.value) : 0;
+  });
+
+  if (gradeChart) {
+    gradeChart.destroy();
+  }
+
+  gradeChart = new Chart(ctx, {
+    type: 'radar',
+    data: {
+      labels: ['國文', '數學', '英文', '社會', '自然'],
+      datasets: [{
+        label: '成績分布',
+        data: gradeValues,
+        fill: true,
+        backgroundColor: 'rgba(66, 153, 225, 0.2)',
+        borderColor: 'rgb(66, 153, 225)',
+        pointBackgroundColor: 'rgb(66, 153, 225)',
+        pointBorderColor: '#fff',
+        pointHoverBackgroundColor: '#fff',
+        pointHoverBorderColor: 'rgb(66, 153, 225)'
+      }]
+    },
+    options: {
+      elements: {
+        line: {
+          borderWidth: 3
+        }
+      },
+      scales: {
+        r: {
+          angleLines: {
+            display: false
+          },
+          suggestedMin: 0,
+          suggestedMax: 7
+        }
+      }
+    }
+  });
+  
+  document.getElementById('gradeChart').style.display = 'block';
+}
+
+function gradeToNumber(grade) {
+  const gradeMap = {
+    'A++': 7,
+    'A+': 6,
+    'A': 5,
+    'B++': 4,
+    'B+': 3,
+    'B': 2,
+    'C': 1
+  };
+  return gradeMap[grade] || 0;
+}
+
+function saveProgress() {
+  const formData = new FormData(document.getElementById('gradeForm'));
+  const data = Object.fromEntries(formData.entries());
+  localStorage.setItem('gradeFormProgress', JSON.stringify(data));
+  alert('進度已儲存');
+}
+
+function loadProgress() {
+  const savedData = localStorage.getItem('gradeFormProgress');
+  if (savedData) {
+    const data = JSON.parse(savedData);
+    Object.keys(data).forEach(key => {
+      const input = document.getElementById(key);
+      if (input) {
+        input.value = data[key];
+      }
+    });
+    updateChart();
+    alert('進度已載入');
+  } else {
+    alert('沒有找到已儲存的進度');
+  }
+}
+
+function showInfoBox(questionNumber) {
+  const infoBox = document.getElementById('infoBox');
+  const infoText = document.getElementById('infoText');
+  let message = '';
+
+  switch(questionNumber) {
+    case 1:
+      message = '請選擇國文成績。';
+      break;
+    case 2:
+      message = '請選擇數學成績。';
+      break;
+    case 3:
+      message = '請選擇英文成績。';
+      break;
+    case 4:
+      message = '請選擇社會成績。';
+      break;
+    case 5:
+      message = '請選擇自然成績。';
+      break;
+    case 6:
+      message = '請選擇作文成績。';
+      break;
+    case 7:
+    case 8:
+      message = '全區序位比率可以幫助你了解在整體考生中的相對表現。';
+      break;
+    case 9:
+    case 10:
+      message = '全區序位區間提供了你成績的可能範圍，有助於更準確地評估表現。';
+      break;
+    default:
+      message = '';
+  }
+
+  if (message) {
+    infoText.textContent = message;
+    infoBox.classList.remove('hidden');
+    gsap.fromTo(infoBox, {opacity: 0, y: -20}, {duration: 0.5, opacity: 1, y: 0, ease: 'power2.out'});
+  } else {
+    infoBox.classList.add('hidden');
+  }
+}
+
+</script>
+</body></html>
